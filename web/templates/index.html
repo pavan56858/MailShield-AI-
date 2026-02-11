@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhishGuard AI – Phishing Email Detector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ─── HEADER ─────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">PhishGuard <span class="logo-accent">AI</span></span>
+      </div>
+      <nav class="header-nav">
+        <a href="#how-it-works">How it Works</a>
+        <a href="#checker">Try It</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── HERO ────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-badge">🤖 Powered by Random Forest AI</div>
+      <h1 class="hero-title">
+        Detect <span class="gradient-text">Phishing Emails</span><br>
+        Instantly with AI
+      </h1>
+      <p class="hero-subtitle">
+        Paste any suspicious email below. Our machine learning model will
+        analyse it in seconds and tell you if it's a phishing attempt.
+      </p>
+      <a href="#checker" class="btn btn-primary hero-cta">Check an Email ↓</a>
+    </div>
+  </section>
+
+  <!-- ─── STATS BAR ───────────────────────────────────────────────── -->
+  <section class="stats-bar">
+    <div class="container stats-inner">
+      <div class="stat-item">
+        <span class="stat-value">95%+</span>
+        <span class="stat-label">Detection Accuracy</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">&lt; 1s</span>
+        <span class="stat-label">Response Time</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">5000+</span>
+        <span class="stat-label">TF-IDF Features</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">9</span>
+        <span class="stat-label">Behaviour Signals</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EMAIL CHECKER ───────────────────────────────────────────── -->
+  <section class="checker-section" id="checker">
+    <div class="container">
+      <div class="checker-card">
+        <div class="checker-header">
+          <h2>Email Analyser</h2>
+          <p>Paste the full email content, subject + body, for best results.</p>
+        </div>
+
+        <!-- TEXTAREA INPUT -->
+        <div class="form-group">
+          <label for="emailInput" class="form-label">Email Content</label>
+          <textarea
+            id="emailInput"
+            class="email-textarea"
+            placeholder="Paste your email here…&#10;&#10;Example:&#10;Subject: Urgent! Your account will be closed&#10;&#10;Dear User, your account has been suspended. Click here to verify: http://suspicious-link.com"
+            rows="10"
+            spellcheck="false"
+          ></textarea>
+          <div class="char-counter">
+            <span id="charCount">0</span> / 10,000 characters
+          </div>
+        </div>
+
+        <!-- EXAMPLE BUTTONS -->
+        <div class="example-buttons">
+          <span class="example-label">Try an example:</span>
+          <button class="btn btn-example" onclick="loadExample('phishing')">
+            🎣 Phishing Sample
+          </button>
+          <button class="btn btn-example" onclick="loadExample('legitimate')">
+            ✅ Legitimate Sample
+          </button>
+          <button class="btn btn-example btn-clear" onclick="clearInput()">
+            🗑️ Clear
+          </button>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <button id="checkBtn" class="btn btn-primary btn-check" onclick="checkEmail()">
+          <span class="btn-text">🔍 Analyse Email</span>
+          <span class="btn-loading hidden">
+            <span class="spinner"></span> Analysing…
+          </span>
+        </button>
+
+        <!-- RESULT PANEL (hidden until a prediction is made) -->
+        <div id="resultPanel" class="result-panel hidden">
+          <div class="result-header">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-verdict">
+              <h3 id="resultTitle">—</h3>
+              <p id="resultSubtitle">—</p>
+            </div>
+            <div class="result-badge" id="riskBadge">—</div>
+          </div>
+
+          <div class="result-details">
+            <div class="detail-card">
+              <div class="detail-label">Confidence Score</div>
+              <div class="detail-value" id="confidenceValue">—</div>
+              <div class="confidence-bar-wrap">
+                <div class="confidence-bar" id="confidenceBar"></div>
+              </div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-label">Risk Level</div>
+              <div class="detail-value" id="riskValue">—</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-label">Analysis Time</div>
+              <div class="detail-value" id="timestampValue">—</div>
+            </div>
+          </div>
+
+          <div class="result-tips" id="resultTips"></div>
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        <div id="errorPanel" class="error-panel hidden">
+          <span class="error-icon">⚠️</span>
+          <span id="errorMessage">An error occurred.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ────────────────────────────────────────────── -->
+  <section class="how-section" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Three simple steps powered by machine learning</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-icon">📋</div>
+          <h3>Paste the Email</h3>
+          <p>Copy and paste the full email content — subject line, body, and any visible links.</p>
+        </div>
+        <div class="step-connector">→</div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-icon">🔬</div>
+          <h3>AI Feature Analysis</h3>
+          <p>Our model extracts 5,000+ TF-IDF word features and 9 behavioural signals (URL count, urgency words, …).</p>
+        </div>
+        <div class="step-connector">→</div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-icon">🎯</div>
+          <h3>Get Your Result</h3>
+          <p>A Random Forest of 200 decision trees votes on the verdict. You get a prediction + confidence score.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ────────────────────────────────────────────────── -->
+  <section class="features-section">
+    <div class="container">
+      <h2 class="section-title">What We Detect</h2>
+      <div class="features-grid">
+        <div class="feature-chip">🔗 Suspicious URLs</div>
+        <div class="feature-chip">🔢 IP Addresses in Links</div>
+        <div class="feature-chip">⚡ Urgency Language</div>
+        <div class="feature-chip">🔑 Credential Requests</div>
+        <div class="feature-chip">🏦 Fake Bank Alerts</div>
+        <div class="feature-chip">🎁 Prize / Lottery Scams</div>
+        <div class="feature-chip">🔠 Excessive CAPS</div>
+        <div class="feature-chip">📧 HTML Injection</div>
+        <div class="feature-chip">💥 Special Characters</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ──────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-logo">🛡️ PhishGuard AI</div>
+      <p class="footer-note">
+        Built with Python · Flask · Random Forest · TF-IDF ·
+        AI &amp; Cybersecurity Learning Project
+      </p>
+      <p class="footer-disclaimer">
+        ⚠️ For educational purposes only. Always exercise caution with suspicious emails.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ─── JAVASCRIPT ───────────────────────────────────────────────── -->
+  <script>
+    // ─────────────────────────────────────────────────────────────────
+    // SAMPLE EMAILS
+    // ─────────────────────────────────────────────────────────────────
+    const SAMPLES = {
+      phishing: `Subject: URGENT: Your Bank Account Has Been Suspended!
+
+Dear Valued Customer,
+
+We have detected suspicious activity on your account and it has been temporarily suspended.
+
+To restore full access, you must verify your identity IMMEDIATELY by clicking the link below:
+
+http://192.168.10.1/secure-login-verify-now
+
+Failure to verify within 24 HOURS will result in PERMANENT account closure and loss of all funds.
+
+Please provide your:
+- Full name
+- Date of birth
+- Account number & password
+- Credit card number and CVV
+
+Your urgent action is required NOW.
+
+Security Team
+support@bank-secure-verify.com`,
+
+      legitimate: `Subject: Team Meeting Notes – Q1 Planning Session
+
+Hi everyone,
+
+Thanks for joining today's planning session. Here's a quick summary of what we discussed:
+
+1. Project Alpha is on track for a March 15 delivery
+2. Budget approval for the new design tools is pending finance sign-off
+3. The next sprint review is scheduled for February 20 at 10 AM
+
+Action items:
+- Sarah to share the updated wireframes by Friday
+- Dev team to complete the API integration by end of month
+- Mark to follow up with the marketing team on campaign assets
+
+Let me know if I missed anything. Have a great rest of the week!
+
+Best,
+James`
+    };
+
+    // ─────────────────────────────────────────────────────────────────
+    // UTILITIES
+    // ─────────────────────────────────────────────────────────────────
+    const emailInput   = document.getElementById("emailInput");
+    const charCount    = document.getElementById("charCount");
+    const resultPanel  = document.getElementById("resultPanel");
+    const errorPanel   = document.getElementById("errorPanel");
+    const checkBtn     = document.getElementById("checkBtn");
+
+    emailInput.addEventListener("input", () => {
+      charCount.textContent = emailInput.value.length;
+    });
+
+    function loadExample(type) {
+      emailInput.value = SAMPLES[type];
+      charCount.textContent = emailInput.value.length;
+      hideResultPanel();
+    }
+
+    function clearInput() {
+      emailInput.value = "";
+      charCount.textContent = 0;
+      hideResultPanel();
+    }
+
+    function hideResultPanel() {
+      resultPanel.classList.add("hidden");
+      errorPanel.classList.add("hidden");
+    }
+
+    function showError(msg) {
+      document.getElementById("errorMessage").textContent = msg;
+      errorPanel.classList.remove("hidden");
+      resultPanel.classList.add("hidden");
+    }
+
+    function setLoading(isLoading) {
+      const btnText    = checkBtn.querySelector(".btn-text");
+      const btnLoading = checkBtn.querySelector(".btn-loading");
+      checkBtn.disabled = isLoading;
+      btnText.classList.toggle("hidden", isLoading);
+      btnLoading.classList.toggle("hidden", !isLoading);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // MAIN PREDICTION FUNCTION
+    // ─────────────────────────────────────────────────────────────────
+    async function checkEmail() {
+      const emailText = emailInput.value.trim();
+
+      if (!emailText || emailText.length < 10) {
+        showError("Please enter at least 10 characters of email content.");
+        return;
+      }
+
+      hideResultPanel();
+      setLoading(true);
+
+      try {
+        const response = await fetch("/predict", {
+          method  : "POST",
+          headers : { "Content-Type": "application/json" },
+          body    : JSON.stringify({ email_text: emailText })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          showError(data.error || "An unexpected error occurred.");
+          return;
+        }
+
+        displayResult(data);
+
+      } catch (err) {
+        showError("Could not connect to the server. Is Flask running?");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // DISPLAY RESULT
+    // ─────────────────────────────────────────────────────────────────
+    function displayResult(data) {
+      const isPhishing  = data.label === 1;
+      const confidence  = parseFloat(data.confidence);
+
+      // Icon + colours
+      const icon        = isPhishing ? "🚨" : "✅";
+      const titleText   = isPhishing ? "PHISHING EMAIL DETECTED" : "Email Appears Legitimate";
+      const subtitleText = isPhishing
+        ? "This email shows strong signs of a phishing attempt. Do NOT click any links or provide personal information."
+        : "No significant phishing indicators were detected. Always remain cautious with unexpected emails.";
+
+      // Risk badge colour
+      const badgeClass = {
+        "High"  : "badge-danger",
+        "Medium": "badge-warning",
+        "Low"   : "badge-success"
+      }[data.risk_level] || "badge-secondary";
+
+      // Confidence bar colour
+      const barColor = isPhishing
+        ? (confidence > 80 ? "#ef4444" : "#f97316")
+        : "#22c55e";
+
+      // Populate DOM
+      document.getElementById("resultIcon").textContent       = icon;
+      document.getElementById("resultTitle").textContent      = titleText;
+      document.getElementById("resultSubtitle").textContent   = subtitleText;
+      document.getElementById("confidenceValue").textContent  = `${confidence}%`;
+      document.getElementById("riskValue").textContent        = data.risk_level;
+      document.getElementById("timestampValue").textContent   = data.timestamp;
+
+      const riskBadge = document.getElementById("riskBadge");
+      riskBadge.textContent = `${data.risk_level} Risk`;
+      riskBadge.className   = `result-badge ${badgeClass}`;
+
+      const bar = document.getElementById("confidenceBar");
+      bar.style.width            = `${confidence}%`;
+      bar.style.backgroundColor  = barColor;
+
+      // Tips panel
+      const tips = document.getElementById("resultTips");
+      tips.innerHTML = isPhishing
+        ? `<strong>⚠️ Safety Tips:</strong>
+           <ul>
+             <li>Do <strong>not</strong> click any links in this email.</li>
+             <li>Never provide passwords, banking details, or personal info.</li>
+             <li>Report this email to your IT / security team.</li>
+             <li>Delete the email from your inbox immediately.</li>
+           </ul>`
+        : `<strong>💡 Stay Vigilant:</strong>
+           <ul>
+             <li>This email appears safe, but always verify unexpected requests.</li>
+             <li>Check the sender's actual email address, not just the display name.</li>
+             <li>When in doubt, contact the sender through a known channel.</li>
+           </ul>`;
+
+      // Apply result styling to card
+      resultPanel.className = `result-panel ${isPhishing ? "result-phishing" : "result-legitimate"}`;
+
+      // Scroll into view smoothly
+      resultPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Allow pressing Ctrl+Enter to submit
+    // ─────────────────────────────────────────────────────────────────
+    emailInput.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "Enter") checkEmail();
+    });
+  </script>
+
+</body>
+</html>
